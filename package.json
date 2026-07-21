@@ -8,7 +8,7 @@
     "cct": "cli-tool/bin/create-claude-config.js"
   },
   "scripts": {
-    "build": "echo 'Build complete'",
+    "build": "cd dashboard && npm ci && npm run build",
     "test": "echo 'No tests specified'",
     "agent:security-auditor": "security-auditor 'Security audit covering codebase, dependencies, and deployment configuration'",
     "deploy": "./scripts/deploy.sh",
