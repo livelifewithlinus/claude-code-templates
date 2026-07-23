@@ -7,6 +7,17 @@ class TrackingService {
     constructor() {
         this.trackingEnabled = this.shouldEnableTracking();
         this.timeout = 5000; // 5s timeout for tracking requests
+        this.debugEnabled = process.env.CCT_DEBUG === 'true';
+    }
+
+    /**
+     * Log debug information when debug mode is enabled
+     * @param {string} message - Debug message to log
+     */
+    debugLog(message) {
+        if (this.debugEnabled) {
+            console.debug(`📊 ${message}`);
+        }
     }
 
     /**
@@ -43,18 +54,12 @@ class TrackingService {
             this.sendTrackingData(trackingData)
                 .catch(error => {
                     // Silent failure - tracking should never impact functionality
-                    // Only show debug info when explicitly enabled
-                    if (process.env.CCT_DEBUG === 'true') {
-                        console.debug('📊 Tracking info (non-critical):', error.message);
-                    }
+                    this.debugLog(`Tracking info (non-critical): ${error.message}`);
                 });
 
         } catch (error) {
             // Silently handle any tracking errors
-            // Only show debug info when explicitly enabled
-            if (process.env.CCT_DEBUG === 'true') {
-                console.debug('📊 Analytics error (non-critical):', error.message);
-            }
+            this.debugLog(`Analytics error (non-critical): ${error.message}`);
         }
     }
 
@@ -93,16 +98,12 @@ class TrackingService {
 
             clearTimeout(timeoutId);
 
-            if (process.env.CCT_DEBUG === 'true') {
-                console.debug('📊 Download tracked successfully');
-            }
+            this.debugLog('Download tracked successfully');
             
         } catch (error) {
             clearTimeout(timeoutId);
             // Silent fail - tracking should never break user experience
-            if (process.env.CCT_DEBUG === 'true') {
-                console.debug('📊 Tracking failed (non-critical):', error.message);
-            }
+            this.debugLog(`Tracking failed (non-critical): ${error.message}`);
         }
     }
 
@@ -139,25 +140,21 @@ class TrackingService {
                 signal: signal
             });
 
-            if (process.env.CCT_DEBUG === 'true') {
-                console.debug('📊 Payload sent:', JSON.stringify(payload, null, 2));
-                if (response.ok) {
-                    console.debug('📊 Successfully saved to database');
-                } else {
-                    console.debug(`📊 Database save failed with status: ${response.status}`);
-                    try {
-                        const errorText = await response.text();
-                        console.debug('📊 Error response:', errorText);
-                    } catch (e) {
-                        console.debug('📊 Could not read error response');
-                    }
+            this.debugLog(`Payload sent: ${JSON.stringify(payload, null, 2)}`);
+            if (response.ok) {
+                this.debugLog('Successfully saved to database');
+            } else {
+                this.debugLog(`Database save failed with status: ${response.status}`);
+                try {
+                    const errorText = await response.text();
+                    this.debugLog(`Error response: ${errorText}`);
+                } catch (e) {
+                    this.debugLog('Could not read error response');
                 }
             }
 
         } catch (error) {
-            if (process.env.CCT_DEBUG === 'true') {
-                console.debug('📊 Database tracking failed:', error.message);
-            }
+            this.debugLog(`Database tracking failed: ${error.message}`);
             // Don't throw - tracking should be non-blocking
         }
     }
@@ -239,15 +236,11 @@ class TrackingService {
             // Fire-and-forget to Neon Database
             this.sendCommandTracking(payload)
                 .catch(error => {
-                    if (process.env.CCT_DEBUG === 'true') {
-                        console.debug('📊 Command tracking info (non-critical):', error.message);
-                    }
+                    this.debugLog(`Command tracking info (non-critical): ${error.message}`);
                 });
 
         } catch (error) {
-            if (process.env.CCT_DEBUG === 'true') {
-                console.debug('📊 Command tracking error (non-critical):', error.message);
-            }
+            this.debugLog(`Command tracking error (non-critical): ${error.message}`);
         }
     }
 
@@ -271,19 +264,15 @@ class TrackingService {
 
             clearTimeout(timeoutId);
 
-            if (process.env.CCT_DEBUG === 'true') {
-                if (response.ok) {
-                    console.debug('📊 Command execution tracked successfully');
-                } else {
-                    console.debug(`📊 Command tracking failed with status: ${response.status}`);
-                }
+            if (response.ok) {
+                this.debugLog('Command execution tracked successfully');
+            } else {
+                this.debugLog(`Command tracking failed with status: ${response.status}`);
             }
 
         } catch (error) {
             clearTimeout(timeoutId);
-            if (process.env.CCT_DEBUG === 'true') {
-                console.debug('📊 Command tracking failed (non-critical):', error.message);
-            }
+            this.debugLog(`Command tracking failed (non-critical): ${error.message}`);
         }
     }
     /**
@@ -315,15 +304,11 @@ class TrackingService {
 
             this.sendInstallationOutcome(payload)
                 .catch(error => {
-                    if (process.env.CCT_DEBUG === 'true') {
-                        console.debug('📊 Installation outcome tracking info (non-critical):', error.message);
-                    }
+                    this.debugLog(`Installation outcome tracking info (non-critical): ${error.message}`);
                 });
 
         } catch (error) {
-            if (process.env.CCT_DEBUG === 'true') {
-                console.debug('📊 Installation outcome tracking error (non-critical):', error.message);
-            }
+            this.debugLog(`Installation outcome tracking error (non-critical): ${error.message}`);
         }
     }
 
@@ -347,19 +332,15 @@ class TrackingService {
 
             clearTimeout(timeoutId);
 
-            if (process.env.CCT_DEBUG === 'true') {
-                if (response.ok) {
-                    console.debug('📊 Installation outcome tracked successfully');
-                } else {
-                    console.debug(`📊 Installation outcome tracking failed with status: ${response.status}`);
-                }
+            if (response.ok) {
+                this.debugLog('Installation outcome tracked successfully');
+            } else {
+                this.debugLog(`Installation outcome tracking failed with status: ${response.status}`);
             }
 
         } catch (error) {
             clearTimeout(timeoutId);
-            if (process.env.CCT_DEBUG === 'true') {
-                console.debug('📊 Installation outcome tracking failed (non-critical):', error.message);
-            }
+            this.debugLog(`Installation outcome tracking failed (non-critical): ${error.message}`);
         }
     }
 }
