@@ -190,7 +190,7 @@ class ClaudeAPIProxy {
     // Try to notify Claude Code process about the file change
     await this.notifyClaudeProcess();
     
-    // TODO: Monitor for Claude Code response
+    // Response monitoring is handled by the file watcher and session manager
     
     return {
       success: true,

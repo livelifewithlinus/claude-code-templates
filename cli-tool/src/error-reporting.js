@@ -17,6 +17,16 @@
 // CCT_SENTRY_DSN for local testing against a different project.
 const DEFAULT_SENTRY_DSN = 'https://1c1637a93ea6fb81e3edae3d039bdae0@o42738.ingest.us.sentry.io/4511679145312256';
 const SENTRY_DSN = process.env.CCT_SENTRY_DSN || DEFAULT_SENTRY_DSN;
+const DEBUG_ENABLED = process.env.CCT_DEBUG === 'true';
+
+/**
+ * Log debug information when debug mode is enabled
+ */
+function debugLog(message) {
+    if (DEBUG_ENABLED) {
+        console.debug(`📊 ${message}`);
+    }
+}
 
 /**
  * Whether error reporting is allowed to run at all.
@@ -34,9 +44,7 @@ function shouldReportErrors() {
     }
 
     if (!SENTRY_DSN) {
-        if (process.env.CCT_DEBUG === 'true') {
-            console.debug('📊 CCT_ERROR_REPORTING is set but no DSN is configured; skipping.');
-        }
+        debugLog('CCT_ERROR_REPORTING is set but no DSN is configured; skipping.');
         return false;
     }
 
@@ -110,9 +118,7 @@ async function captureCliError(error, context = {}) {
 
         if (typeof fetch !== 'function') {
             // Node < 18 without global fetch — skip rather than pull in a dependency.
-            if (process.env.CCT_DEBUG === 'true') {
-                console.debug('📊 Error reporting requires Node 18+ (global fetch); skipping.');
-            }
+            debugLog('Error reporting requires Node 18+ (global fetch); skipping.');
             return;
         }
 
@@ -129,17 +135,13 @@ async function captureCliError(error, context = {}) {
                 body,
                 signal: controller.signal,
             });
-            if (process.env.CCT_DEBUG === 'true') {
-                console.debug('📊 Error reported to Sentry:', eventId);
-            }
+            debugLog(`Error reported to Sentry: ${eventId}`);
         } finally {
             clearTimeout(timeoutId);
         }
     } catch (reportingError) {
         // Error reporting must never crash the CLI or mask the original error.
-        if (process.env.CCT_DEBUG === 'true') {
-            console.debug('📊 Error reporting failed (non-critical):', reportingError.message);
-        }
+        debugLog(`Error reporting failed (non-critical): ${reportingError.message}`);
     }
 }
 
